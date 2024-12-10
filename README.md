@@ -1,2 +1,2 @@
-# fol-pretrain-generator
-code for generating FOL-Pretrain dataset
+# FOL Pretrain Dataset Generation
+Code for generating FOL-Pretrain dataset

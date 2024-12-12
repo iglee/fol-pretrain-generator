@@ -16,10 +16,6 @@ def select_random_element(lst):
     return random.choice(lst)
 
 
-# Example list of data to process
-data_list = [{"id": 1, "value": "a"}, {"id": 2, "value": "b"}, {"id": 3, "value": "c"}]
-
-
 # Function to process each data point (replace with actual processing logic)
 def data_process(x):
     data = {}
@@ -41,7 +37,8 @@ def write_rules_dataset(data_list, output_file):
             f.write(json.dumps(processed_data) + "\n")
 
 
-with open("data/unique_fol_rules.pkl", "rb") as f:
-    rules = pickle.load(f)
+## write rules to json
+# with open("data/unique_fol_rules.pkl", "rb") as f:
+#    rules = pickle.load(f)
 
-write_rules_dataset(rules, "data/fol_rules.json")
+# write_rules_dataset(rules, "data/fol_rules.json")

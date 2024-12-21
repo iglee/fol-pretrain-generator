@@ -1,0 +1,7 @@
+model: gpt-4o
+prompt: "Generate 10 predicates of the form Rainy(x), Walks(x), Loves(alex), SendPackages(x), Intersect(x,y) about the topic {topic}. Do not copy them exactly as they are examples! (Also, most of them should be variables x (sometimes y or z). But also, try to use diverse names other than just alex all the time.) Format the data in the json form:\n{{topic: [TOPIC], predicates: [GENERATED PREDICATES]}} \n Simply state the data and nothing else. "
+max_tokens: 1000
+temperature: 1.0
+top_p: 1.0
+frequency_penalty: 0.0
+presence_penalty: 0.0

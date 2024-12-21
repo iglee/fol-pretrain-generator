@@ -1,0 +1,18 @@
+{
+    "custom_id": "fol-rule-id",
+    "method": "POST",
+    "url": "/v1/chat/completions",
+    "body": {
+        "model": "gpt-4o-mini",
+        "messages": [
+            {
+                "role": "system",
+                "content": "You are a helpful assistant designed to generate synthetic data."
+            },
+            {
+                "role": "user",
+                "content": "Generate 6 first order logic expressions, strictly in the form: {rule}\nUse functions such as {predicate1}, {predicate2}, and {predicate3} (these are just suggestions, do not copy exactly!) related to {topic}.\nOutput the numbered data (in the format: 1. [EXAMPLE]) and nothing else."
+            }
+        ]
+    }
+}

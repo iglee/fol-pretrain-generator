@@ -2,7 +2,7 @@ from src.fol_util import read_jsonl_to_list, read_json_file, write_list_to_jsonl
 import random
 import json
 
-preamble = "data/batched_prompts_train1/train_data_batch_"
+preamble = "data/batched_prompts_train6/train6_data_batch_"
 
 fol_example_prompt = "config/fol_batch_example.json"
 train_data_pth = "data/unique_train_fol_rules.jsonl"

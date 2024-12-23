@@ -3,6 +3,7 @@ import re
 import tiktoken
 import glob
 import os
+import traceback
 
 TOTAL_TOKEN_CNT=0
 MAX_LEN=0
@@ -57,6 +58,33 @@ def process_batch_file(retrieved_pth, output_path, output_file):
                 datum = {"datum_id":datum_id, "rule" : fol_rules[x["custom_id"]], "string":""}
 
                 matching = match_greek_to_predicates(fol_rules[x["custom_id"]]["exprs"][0], y)
+                
+                if not matching:
+                    break
+                
+                if not len(matching.keys()) == len(set(matching.values())):
+                    break
+
+                # Mapping for replacement variables
+                replacement_map = {}
+                new_variable = iter(['x', 'y', 'z', 'u', 'v', 'w'])  # Add more variables as needed
+
+                # Function to replace variables
+                def replace_variables(match):
+                    variables = match.group(1).split(", ")  # Split variables by ', '
+                    replaced = []
+                    for var in variables:
+                        if var not in replacement_map:
+                            replacement_map[var] = next(new_variable)
+                        replaced.append(replacement_map[var])
+                    return f"({', '.join(replaced)})"
+
+                # Process the dictionary with regex
+                matching = {key: re.sub(r"\((.*?)\)", replace_variables, value) for key, value in matching.items()}
+                
+
+                if not len(matching.keys()) == len(set(matching.values())):
+                    break
                 string = fol_rules[x["custom_id"]]["data"]
 
                 for k,v in matching.items():
@@ -70,8 +98,15 @@ def process_batch_file(retrieved_pth, output_path, output_file):
                 datum_id += 1
                 MAX_LEN = max(MAX_LEN, len(datum["tokens"]))
                 TOTAL_TOKEN_CNT += len(datum["tokens"])
-            except:
-                print(x["custom_id"])
+            except Exception as e:
+                print(f"Error with custom_id {x['custom_id']}: {e}")
+                #print(fol_rules[x["custom_id"]]["exprs"][0])
+                #print(y)
+                #print("Detailed traceback:")
+                #traceback.print_exc()
+            
+        
+        
     write_list_to_jsonl(dataset, os.path.join(output_path, output_file))
 
 output_file = "segment_{i}.jsonl"
@@ -80,5 +115,6 @@ files = glob.glob("/mnt/isabelle-pretrain-data/fol-pretrain-data-new/*")
 for i, retrieved_pth in enumerate(files):
     process_batch_file(retrieved_pth, output_path, output_file.format(i=i))
     print(f"file {i}: total token cnt: {TOTAL_TOKEN_CNT}, max length of data: {MAX_LEN}")
+    
 
 print(f"final counts: total token cnt: {TOTAL_TOKEN_CNT}, max length of data: {MAX_LEN}")

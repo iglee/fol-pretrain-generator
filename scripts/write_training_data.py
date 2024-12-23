@@ -6,7 +6,6 @@ import os
 
 TOTAL_TOKEN_CNT=0
 MAX_LEN=0
-unique_set = set()
 datum_id = 0
 
 enc = tiktoken.get_encoding("gpt2")
@@ -54,15 +53,14 @@ def process_batch_file(retrieved_pth, output_path, output_file):
         examples = [clean_text(y) for y in examples if y]
 
         for y in examples:
-            datum = {"datum_id":datum_id, "rule" : fol_rules[x["custom_id"]], "string":""}
+            try:
+                datum = {"datum_id":datum_id, "rule" : fol_rules[x["custom_id"]], "string":""}
 
-            matching = match_greek_to_predicates(fol_rules[x["custom_id"]]["exprs"][0], y)
-            string = fol_rules[x["custom_id"]]["data"]
+                matching = match_greek_to_predicates(fol_rules[x["custom_id"]]["exprs"][0], y)
+                string = fol_rules[x["custom_id"]]["data"]
 
-            for k,v in matching.items():
-                string = string.replace(k,v)
-
-            if string not in unique_set:
+                for k,v in matching.items():
+                    string = string.replace(k,v)
 
                 datum["string"] = "<|endoftext|> " + string
                 datum["tokens"] = encode(datum["string"])
@@ -70,9 +68,10 @@ def process_batch_file(retrieved_pth, output_path, output_file):
                 datum["datum_id"] = datum_id
                 dataset.append(datum)
                 datum_id += 1
-                unique_set.add(string)
                 MAX_LEN = max(MAX_LEN, len(datum["tokens"]))
                 TOTAL_TOKEN_CNT += len(datum["tokens"])
+            except:
+                print(x["custom_id"])
     write_list_to_jsonl(dataset, os.path.join(output_path, output_file))
 
 output_file = "segment_{i}.jsonl"

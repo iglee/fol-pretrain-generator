@@ -2,17 +2,17 @@ from src.fol_util import read_jsonl_to_list, read_json_file, write_list_to_jsonl
 import random
 import json
 
-preamble = "data/batched_prompts_train6/train6_data_batch_"
+preamble = "data/batched_prompts_test/test_data_batch_"
 
 fol_example_prompt = "config/fol_batch_example.json"
-train_data_pth = "data/unique_train_fol_rules.jsonl"
-train_data = read_jsonl_to_list(train_data_pth)
+test_data_pth = "data/unique_test_fol_rules.jsonl"
+test_data = read_jsonl_to_list(test_data_pth)
 preds = read_jsonl_to_list("data/predicates.jsonl")
 
 batch = []
 batch_size = 1000
 
-for i, x in enumerate(train_data):
+for i, x in enumerate(test_data):
     example = read_json_file(fol_example_prompt)
     example["custom_id"] = x["id"]
 

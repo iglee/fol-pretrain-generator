@@ -38,9 +38,11 @@ def retrieve_batches_and_save(batch_ids, filepath):
                 f.write(content.text)
                 # pass
 
-path = "/mnt/isabelle-pretrain-data/fol-pretrain-data-new/"
+path = "/mnt/isabelle-pretrain-data/fol-pretrain-test-new"
 
 os.makedirs(path, exist_ok=True)
+
+total_batches = total_batches[:110]
 
 retrieve_batches_and_save(
     total_batches[::-1],

@@ -5,8 +5,8 @@ import os
 
 client = OpenAI()
 
-files = glob.glob("data/batched_prompts_train6/*")
-preamble = "train6_"
+files = glob.glob("data/batched_prompts_test/*")
+preamble = "test_"
 
 for file in files:
     request_type = os.path.basename(file)

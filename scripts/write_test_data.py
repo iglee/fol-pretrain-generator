@@ -14,13 +14,13 @@ encode = lambda s: enc.encode(s, allowed_special={"<|endoftext|>"})
 decode = lambda l: enc.decode(l)
 
 # output path
-output_path = "/mnt/isabelle-pretrain-data/training_data_v2"
+output_path = "/mnt/isabelle-pretrain-data/test_data_v2"
 
 if not os.path.exists(output_path):
     os.makedirs(output_path)
 
 
-fol_rules_file = "data/unique_train_fol_rules.jsonl"
+fol_rules_file = "data/unique_test_fol_rules.jsonl"
 fol_rules = read_jsonl_to_list(fol_rules_file)
 fol_rules = {x["id"] : x for x in fol_rules}
 
@@ -110,7 +110,7 @@ def process_batch_file(retrieved_pth, output_path, output_file):
     write_list_to_jsonl(dataset, os.path.join(output_path, output_file))
 
 output_file = "segment_{i}.jsonl"
-files = glob.glob("/mnt/isabelle-pretrain-data/fol-pretrain-data-new/*")
+files = glob.glob("/mnt/isabelle-pretrain-data/fol-pretrain-test-new/*")
 
 for i, retrieved_pth in enumerate(files):
     process_batch_file(retrieved_pth, output_path, output_file.format(i=i))

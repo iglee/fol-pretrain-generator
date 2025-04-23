@@ -5,7 +5,6 @@ import json
 import re
 
 predicates_dir = "data/predicate_prompted"
-output_dir = "data/predicate_processed"
 N_files = 177*2
 
 def extract_jsonl_from_content(content):

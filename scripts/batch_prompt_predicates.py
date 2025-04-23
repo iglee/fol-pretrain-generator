@@ -11,6 +11,7 @@ model = "gpt-4o"
 
 n_repeat_triplet = 6
 n_repeat_singlet = 10000
+i = 0
 
 def separate_predicates(input_string):
     return re.findall(r'\b\w+\s*\([^)]*\)', input_string)
@@ -42,6 +43,8 @@ for k,v in triplets.items():
         for predicates in v:
             message = process_prompt(prompt.format(topic, *predicates))
             batch_item = batch_prompt_items(message)
+            batch_item['custom_id'] = f"predicates_{i}"
+            i += 1
             batches.append(batch_item)
 
 
@@ -51,8 +54,10 @@ for k,v in singles.items():
         predicates = random.sample(v, 3)[:]
         message = process_prompt(prompt.format(topic, *predicates))
         batch_item = batch_prompt_items(message)
+        batch_item['custom_id'] = f"predicates_{i}"
+        i += 1
         batches.append(batch_item)
         
         
 save_batch_list_to_jsonl(batches, chunk_size=1000, base_filename="batch", base_dir="data/batches/")
-start_batch_jobs_from_dir("data/batches/", project_name="fol_pretrain", run_date="2025-04-22")
+start_batch_jobs_from_dir("data/batches/", project_name="fol_pretrain_predicates", run_date="2025-04-22")

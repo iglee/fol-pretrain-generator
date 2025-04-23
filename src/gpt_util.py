@@ -3,6 +3,7 @@ import os
 import yaml
 import random
 import json
+from tqdm import tqdm
 
 api_key = os.getenv("OPENAI_API_KEY")
 client = OpenAI(api_key=api_key)
@@ -30,7 +31,7 @@ def save_batch_list_to_jsonl(batches, chunk_size=1000, base_filename="batch", ba
 
 def start_batch_jobs_from_dir(batch_dir, project_name="fol_pretrain", run_date="2025-04-22"):
     # Iterate through each file in the batch directory
-    for filename in os.listdir(batch_dir):
+    for filename in tqdm(os.listdir(batch_dir), desc="Processing files"):
         if filename.endswith(".jsonl"):
             file_path = os.path.join(batch_dir, filename)
 

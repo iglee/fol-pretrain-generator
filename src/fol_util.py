@@ -30,29 +30,18 @@ def read_json_file(file_path):
     except Exception as e:
         print(f"An error occurred: {e}")
 
-def select_random_element(lst):
+def read_jsonl_to_list(file_path):
     """
-    Parameters:
-        lst (list): The list to select an element from.
-
-    Returns:
-        element: A randomly selected element from the list.
+    Reads a JSONL file and returns its contents as a list of dictionaries.
     """
-    if not lst:
-        raise ValueError("The list is empty. Cannot select a random element.")
-    return random.choice(lst)
-
-
-# Function to process each data point (replace with actual processing logic)
-def data_process(x):
-    data = {}
-    data["data"] = x[0].replace("\n", "")
-    data["total_complexity"] = x[1]
-    for k, v in x[2].items():
-        data[k] = v
-    data["exprs"] = [y.replace("\n", "") for y in data["exprs"]]
-    return data
-
+    data_list = []
+    try:
+        with open(file_path, 'r') as file:
+            for line in file:
+                data_list.append(json.loads(line))
+    except (FileNotFoundError, json.JSONDecodeError) as e:
+        print(f"Error reading the file: {e}")
+    return data_list
 
 def write_rules_dataset(data_list, output_file):
     with open(output_file, "w") as f:
@@ -85,19 +74,6 @@ def write_list_to_jsonl(data_list, file_path):
                 file.write(json_line + '\n')  # Write each JSON object as a line
     except Exception as e:
         print(f"Error writing to file: {e}")
-
-def read_jsonl_to_list(file_path):
-    """
-    Reads a JSONL file and returns its contents as a list of dictionaries.
-    """
-    data_list = []
-    try:
-        with open(file_path, 'r') as file:
-            for line in file:
-                data_list.append(json.loads(line))
-    except (FileNotFoundError, json.JSONDecodeError) as e:
-        print(f"Error reading the file: {e}")
-    return data_list
 
 
 def test_train_split_list(data, fraction=0.2):

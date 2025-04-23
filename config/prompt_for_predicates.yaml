@@ -1,7 +1,0 @@
-model: gpt-4o
-prompt: "Generate 30 predicates of first order logic about {topic}. The format is [function]([variables]). Example: Happy(x), Walks(y), Loves(audrey, x). Limit the number of variables to 2. \n\nSimply output the predicates as a python list of strings and nothing else."
-max_tokens: 4000
-temperature: 1.0
-top_p: 1.0
-frequency_penalty: 0.0
-presence_penalty: 0.0

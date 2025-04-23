@@ -55,31 +55,5 @@ def start_batch_jobs_from_dir(batch_dir, project_name="fol_pretrain", run_date="
                     metadata=metadata
                 )
         
-def retrieve_batches_by_metadata(project_name=None, run_date=None):
-    # List all batches from OpenAI API
-    batches = openai.Batch.list()
-
-    # Filter batches by metadata
-    filtered_batches = []
-    for batch in batches['data']:
-        batch_metadata = batch.get("metadata", {})
-
-        # Check if batch metadata matches the provided filters
-        if (project_name and batch_metadata.get("project") == project_name) or \
-           (run_date and batch_metadata.get("run_date") == run_date):
-            filtered_batches.append(batch)
-
-    # If no matching batches, print a message
-    if not filtered_batches:
-        print("No batches found matching the provided metadata.")
-    else:
-        # Return or process matching batches
-        for batch in filtered_batches:
-            print(f"Batch ID: {batch['id']}")
-            print(f"Project: {batch['metadata'].get('project')}")
-            print(f"Run Date: {batch['metadata'].get('run_date')}")
-            print(f"Status: {batch['status']}")
-            print(f"Link: https://platform.openai.com/batch/{batch['id']}")
-            print("-" * 50)
-
-    return filtered_batches
+def get_response_from_batch_items(x):
+    return x['response']['body']['choices'][0]['message']['content']

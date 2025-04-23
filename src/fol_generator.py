@@ -178,6 +178,7 @@ def simplify_subexpression(formula, d=2):
 
                 new_args.extend(simplified_subset)
             
+            # for distributive/associative rules for FOL, but for the most part ignore, cause it takes a really long time recursively
             """
             new_args = []
             for i in range(0, len(args), 2):  # Process 2 arguments at a time
@@ -257,7 +258,7 @@ def generate_datum():
         "original_complexity": complexity + cnt_v + cnt_o,
     }
 
-    # Hard coded the max number of iterations.. Prob not the best way to do this, but seems to simplify to optimal solution ~90% of the times.
+    # Hard coded the max number of iterations.. Prob not the best way to do this.. :/
     cnt_max = 20
 
     complexity_by_step = [calculate_circuit_complexity(formula) ]
@@ -306,25 +307,12 @@ def generate_datum():
             elimination_complexity.append(simplify_complexity)
             depth = 1
 
-    #last_formula = simplify_logic(formula)
-    #last_step = print_formula(last_formula)
-
-    #if last_step != steps[-1]:
-        # print("Last Step: ", last_step)
-    #    cnt_o, cnt_v = count_unique_operators_and_variables(last_formula)
-    #    steps.append(last_step)
-    #    complexity_by_step.append(
-    #        calculate_circuit_complexity(last_formula) + cnt_v + cnt_o
-    #    )
+    
     datum["exprs"] = steps
     datum["complexity_by_step"] = complexity_by_step
     datum["elimination_complexity"] = elimination_complexity
     datum["num_var"] = num_vars_by_steps
     datum["num_ops"] = num_ops_by_steps
-
-
-
-
 
 
     if simplify_logic(formula) != simplified_final:

@@ -53,13 +53,12 @@ def generate_variables(num_variables=5):
 
 
 # Print with Unicode, for uniform formatting of FOL
-def print_formula(formula):
+def print_formula(formula)d:
     return sp.printing.pretty(formula, use_unicode=True)
 
 
 # Function to search and simplify a subexpression with depth < 2
 def simplify_subexpression(formula, d=2):
-
     def get_depth(expr):
         if isinstance(expr, (And, Or, Implies)):
             return 1 + max(get_depth(sub_expr) for sub_expr in expr.args)
@@ -77,11 +76,13 @@ def simplify_subexpression(formula, d=2):
         if simplified_once:
             return expr
 
+
+
         if get_depth(expr) < d:
             
             for i in range(d):
                 if i < 2:
-                    simplified_expr = simplify_logic(expr, deep=False)
+                    simplified_expr = simplify_logic(expr, form="dnf", deep=False)
                 else:
                     simplified_expr = traverse_and_simplify(expr, d=i)
 
@@ -92,65 +93,6 @@ def simplify_subexpression(formula, d=2):
 
                 return simplified_expr
 
-        elif isinstance(expr, Not):
-            if expr.args[0] == sp.true:
-                #print("Negation: evaluate bools, true -> false")
-                simplified_once = True
-                return sp.false
-            
-            if expr.args[0] == sp.false:
-                #print("Negation: evaluate bools, false -> true")
-                simplified_once = True
-                return sp.true
-
-            if isinstance(expr.args[0], Not):
-                #print("Double Negation Simplified", expr, expr.args[0].args[0])
-                simplified_once = True
-                return expr.args[0].args[0]
-
-            if isinstance(expr.args[0], Or):
-                #print("Negation: de Morgans OR simplified")
-                simplified_once = True
-                tmp = expr.args[0].args
-                tmp = [Not(x, evaluate = False) for x in tmp]
-                return And(*tmp, evaluate=False)
-
-            if isinstance(expr.args[0], And):
-                #print("Negation: de Morgans AND simplified")
-                simplified_once = True
-                tmp = expr.args[0].args
-                tmp = [Not(x, evaluate = False) for x in tmp]
-                return Or(*tmp, evaluate=False)
-
-            new_arg = traverse_and_simplify(expr.args[0], d=2)
-            return Not(new_arg, evaluate=False)
-
-        elif isinstance(expr, Implies):
-            #print(expr, expr.args[0].is_Atom, expr.args[1].is_Atom)
-            if expr.args[0] == expr.args[1]:
-                #print("Implies: Tautology, expressions the same")
-                simplified_once = True
-                return sp.true
-
-            if expr.args[0].is_Atom and expr.args[1].is_Atom:
-                possible_simplification = Implies(expr.args[0], expr.args[1], evaluate=True)
-                if possible_simplification != expr:
-                    #print("Implies simplified: is atom", expr)
-                    simplified_once = True
-                    return possible_simplification
-
-            if get_depth(expr) < 5:
-                #print("Implies simplified: identity rule", expr, "->",  Or(Not(expr.args[0], evaluate=False), expr.args[1], evaluate=False))
-                simplified_once = True
-                return Or(Not(expr.args[0], evaluate=False), expr.args[1], evaluate=False)
-            
-            
-            if traverse_and_simplify(expr.args[0], d=2) != expr.args[0]:
-                return Implies(traverse_and_simplify(expr.args[0], d=d), expr.args[1], evaluate=False)
-            else:
-                return Implies(expr.args[0], traverse_and_simplify(expr.args[1], d=d), evaluate=False)
-        
-
         elif isinstance(expr, (And, Or)):
             args = list(expr.args)
             tmp = args[:]
@@ -159,16 +101,27 @@ def simplify_subexpression(formula, d=2):
             for i in range(len(tmp)):
                 
                 if get_depth(tmp[i]) < 2:
-                    simplified_arg = simplify_logic(tmp[i], deep=False)
+                    simplified_arg = simplify_logic(tmp[i], form="dnf", deep=False)
                     if simplified_arg != tmp[i]:
                         tmp[i] = simplified_arg
-                        return expr.func(*tmp, evaluate=False)     
-            
+                        return expr.func(*tmp, evaluate=False)
 
+
+            if d > 2:
+                args = list(expr.args)
+                tmp = args[:]
+                for i in range(len(tmp)):
+                    if get_depth(tmp[i]) == 2:
+                        simplified_arg = simplify_logic(tmp[i], form="dnf", deep=False)
+                        if simplified_arg != tmp[i]:
+                            tmp[i] = simplified_arg
+                            return expr.func(*tmp, evaluate=False)
+                        
+            
             new_args = []
             for i in range(0, len(args), 2):  # Process 2 arguments at a time
                 subset = args[i:i+2]
-                simplified_subset = [traverse_and_simplify(arg, d=2) for arg in subset]
+                simplified_subset = [traverse_and_simplify(arg, d) for arg in subset]
 
                 if simplified_subset != subset:
                     # Simplification occurred; stop early and extend with the rest of original args
@@ -178,24 +131,24 @@ def simplify_subexpression(formula, d=2):
 
                 new_args.extend(simplified_subset)
             
-            """
-            new_args = []
-            for i in range(0, len(args), 2):  # Process 2 arguments at a time
-                subset = args[i:i+2]
-                if len(subset) < 2:
-                    continue
-                if get_depth(subset[0]) < 3 and get_depth(subset[1]) < 3:
-                    tmp = simplify_logic(expr.func(*subset, evaluate=False))
-                    new_args.append(tmp)
-                    #print(subset, tmp.args)
-                    if sorted(tmp.args, key=str) != sorted(subset, key=str):
-                        new_args.extend(args[i+2:])
-                        #print("And/Or simplification", subset, " -> ",tmp)
-                        #print(new_args)
-                        return expr.func(*new_args, evaluate=False)
-            """
-            
             return expr.func(*new_args, evaluate=False)
+
+
+        elif isinstance(expr, Implies):
+            expr.args
+            if random.random() < 0.5:
+                return Implies(traverse_and_simplify(expr.args[0], d=2), expr.args[1], evaluate=False)
+            else:
+                return Implies(expr.args[0], traverse_and_simplify(expr.args[1], d=2), evaluate=False)
+
+        
+        elif isinstance(expr, Not):
+            new_arg = traverse_and_simplify(expr.args[0], d=2)
+            return Not(new_arg, evaluate=False)
+
+        
+
+        
 
         return expr
 
@@ -258,7 +211,12 @@ def generate_datum():
     }
 
     # Hard coded the max number of iterations.. Prob not the best way to do this, but seems to simplify to optimal solution ~90% of the times.
-    cnt_max = 20
+    if datum["original_complexity"] < 30:
+        cnt_max = 25
+    elif datum["original_complexity"] < 45:
+        cnt_max = 50
+    else:
+        cnt_max = 60
 
     complexity_by_step = [calculate_circuit_complexity(formula) ]
     num_ops_by_steps = [cnt_o]
@@ -278,22 +236,19 @@ def generate_datum():
         if formula == simplified_final:
             break
 
-        if depth > 4:
-            break
-
         simplified_formula, simplify_complexity = simplify_subexpression(formula, depth)
         print_formula(simplified_formula)
 
         if formula == simplified_formula:
             depth += 1
-            #print("did not simplify:", depth, cnt)
+            # print(depth, cnt)
             cnt += 1
         else:
-            #print("--")
-            #print(f"Depth {depth-1}, Original Formula: {print_formula(formula)}")
-            #print(
-            #   f"Depth {depth-1}, Simplified Formula: {print_formula(simplified_formula)}, Complexity: {simplify_complexity}"
-            #)
+            # print("--")
+            # print(f"Depth {depth-1}, Original Formula: {print_formula(formula)}")
+            # print(
+            #    f"Depth {depth-1}, Simplified Formula: {print_formula(simplified_formula)}, Complexity: {simplify_complexity}"
+            # )
 
             formula = simplified_formula
             cnt_o, cnt_v = count_unique_operators_and_variables(formula)
@@ -324,21 +279,8 @@ def generate_datum():
 
 
 
-
-
-
-    if simplify_logic(formula) != simplified_final:
-        #print("DID NOT MATCH: ")
-        #print(formula)
-        #print(simplify_logic(formula))
-        #print("correct: ", simplified_final)
-        #print("\n\n\n======")
+    if formula != simplified_final:
         return None
-
-
-
-
-
     # print(steps)
     # print(complexity_by_step)
     # print(
@@ -355,7 +297,7 @@ dataset = []
 unique_exprs = set()
 
 
-N = 1500000
+N = 5
 pbar = tqdm(total=N, desc="Generating unique expressions")
 
 while len(unique_exprs) < N:
@@ -372,15 +314,11 @@ while len(unique_exprs) < N:
     expr = " \u21D4 ".join(["(" + x + ")" for x in exprs])
 
     if expr not in unique_exprs:
-        
+        print(datum)
         #print(datum['exprs'])
         dataset.append((expr, complexity, datum))
         unique_exprs.add(expr)
         pbar.update(1)
-    #print("\n\n\n==============")
     
 
 pbar.close()
-
-with open("unique_fol_rules.pkl", "wb") as f:
-    pickle.dump(dataset, f)

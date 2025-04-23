@@ -1,6 +1,6 @@
 model: gpt-4o
-prompt: "Generate 20 predicates of the form Rainy(x), Walks(x), SendPackages(x), Intersect(x,y), and Loves(alex) about the topic {topic}. Do not copy them exactly as they are examples! (Also, almost all of them should be variables x. But also, try to use diverse names for a couple examples.) Format the data in the json form:\n{{topic: [TOPIC], predicates: [GENERATED PREDICATES]}} \n Simply state the data and nothing else. "
-max_tokens: 2000
+prompt: "Generate 30 predicates of first order logic about {topic}. The format is [function]([variables]). Example: Happy(x), Walks(y), Loves(audrey, x). Limit the number of variables to 2. \n\nSimply output the predicates as a python list of strings and nothing else."
+max_tokens: 4000
 temperature: 1.0
 top_p: 1.0
 frequency_penalty: 0.0

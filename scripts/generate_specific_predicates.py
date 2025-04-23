@@ -22,33 +22,30 @@ def parse_predicate_list(predicate_string):
         return None
 
 
-topics = read_file_into_list("data/topics-biology")
+topics = read_file_into_list("data/topics")
 
 if os.path.exists("data/predicates.jsonl"):
     os.remove("data/predicates.jsonl")
 
 topic_predicates = {}
 
-for n in tqdm(range(40), desc="Processing", unit="iteration"):
-    for x in tqdm(topics, desc=f"Iteration {n+1} Progress", leave=False):
-        try:
-            # Generate the response and append to the JSON file
-            config = load_config("config/prompt_for_predicates_bio.yaml")
-            config["prompt"] = process_prompt(config["prompt"].format(topic=x))
-            
-            response = prompt_chatgpt_from_config(config)
-            predicates = parse_predicate_list(response)
-            
-            # Initialize a set for the topic if it doesn't exist
-            if x not in topic_predicates:
-                topic_predicates[x] = set()
-            
-            # Update the set for the topic with the new predicates
-            topic_predicates[x].update(predicates)
-            
-        except Exception as e:
-            print(f"Error generating predicates for topic {x}: {e}")
+
+for _ in tqdm(range(40), desc="Processing", unit="iteration"):
+    for x in ["Harry Potter"]:
+        config = load_config("config/prompt_for_predicates_harrypotter.yaml")
+        config["prompt"] = process_prompt(config["prompt"])
         
+        response = prompt_chatgpt_from_config(config)
+        predicates = parse_predicate_list(response)
+        
+        # Initialize a set for the topic if it doesn't exist
+        if x not in topic_predicates:
+            topic_predicates[x] = set()
+        
+        # Update the set for the topic with the new predicates
+        if predicates:
+            topic_predicates[x].update(predicates)
+
 
 # Print the total unique predicates for each topic
 for topic, preds in topic_predicates.items():
@@ -58,5 +55,5 @@ for topic, preds in topic_predicates.items():
 topic_predicates_list = {topic: list(preds) for topic, preds in topic_predicates.items()}
 
 # Save the dictionary of lists to a file using JSON
-with open('data/topic_predicates_bio.json', 'w') as file:
+with open('data/topic_predicates_harrypotter.json', 'w') as file:
     json.dump(topic_predicates_list, file)

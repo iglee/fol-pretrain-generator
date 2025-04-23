@@ -1,11 +1,14 @@
 from src.fol_util import read_jsonl_to_list, read_json_file, write_list_to_jsonl
 import random
 import json
+import os
 
-preamble = "data/batched_prompts_test/test_data_batch_"
+datadir = "data/batched_prompts_train/"
+preamble = datadir+"train_data_batch_"
+os.makedirs(datadir, exist_ok=True)
 
 fol_example_prompt = "config/fol_batch_example.json"
-test_data_pth = "data/unique_test_fol_rules.jsonl"
+test_data_pth = "data/unique_train_fol_rules.jsonl"
 test_data = read_jsonl_to_list(test_data_pth)
 preds = read_jsonl_to_list("data/predicates.jsonl")
 

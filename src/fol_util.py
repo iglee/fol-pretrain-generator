@@ -4,6 +4,11 @@ import pickle
 import re
 import os
 
+def read_pkl_fie(file_path):
+    with open(file_path, "rb") as file:
+        data = pickle.load(file)
+    return data
+
 def read_json_file(file_path):
     """Reads a JSON file and returns its content as a Python dictionary."""
     try:
@@ -50,6 +55,11 @@ def write_rules_dataset(data_list, output_file):
             # Write the processed data to the JSONL file
             f.write(json.dumps(processed_data) + "\n")
 
+def write_list_to_json(data, file_path):
+    with open(file_path, "w") as f:
+        json.dump(data, f, indent=2, ensure_ascii=False)
+
+
 def write_list_to_jsonl(data_list, file_path):
     """
     Writes a list of JSON objects to a JSONL file.
@@ -81,48 +91,45 @@ def read_jsonl_to_list(file_path):
         print(f"Error reading the file: {e}")
     return data_list
 
-def find_unique_variables(expression, replacements):
-    """
-    Finds all unique variable names with Unicode subscripts in the order of their first appearance
-    and creates a mapping to the provided replacements.
 
-    Args:
-        expression (str): The input string containing variables (e.g., p₀, p₁, ...).
-        replacements (list): A list of replacement strings (e.g., ['α', 'β', ...]).
-
-    Returns:
-        list: A list of unique variable names in the order they appear.
-        dict: A dictionary mapping variables to their replacements.
-    """
-    # Match variable names like p₀, p₁, ...
-    pattern = r"p[\u2080-\u2089]+"
-    seen = set()
-    variables = []
-    for match in re.finditer(pattern, expression):
-        var = match.group(0)
-        if var not in seen:
-            variables.append(var)
-            seen.add(var)
-
-    # Create a mapping of variables to replacements
-    variable_map = {var: replacements[i] for i, var in enumerate(variables) if i < len(replacements)}
+def test_train_split_list(data, fraction=0.2):
+    # Shuffle a copy of the original list
+    data_copy = data[:]
+    random.shuffle(data_copy)
     
-    return variables, variable_map
+    # Compute split index
+    split_idx = int(len(data_copy) * fraction)
+    
+    return data_copy[:split_idx], data_copy[split_idx:]
 
-def replace_variables(expression, variable_map):
+
+## FOL specific
+def standardize_variables(expr):
     """
-    Replaces the given variables in the expression based on the variable map.
-
+    Rename variables in a logical expression to α, β, γ, ... in order of appearance.
+    
     Args:
-        expression (str): The input string containing variables.
-        variable_map (dict): A dictionary mapping variable names to replacements.
-
+        expr (str): A string representing the logical expression.
+    
     Returns:
-        str: The modified expression with replaced variable names.
+        str: A new expression with variables renamed in order of appearance.
     """
-    def replacer(match):
-        return variable_map.get(match.group(0), match.group(0))
-
-    # Match variable names like p₀, p₁, ...
-    pattern = r"p[\u2080-\u2089]+"
-    return re.sub(pattern, replacer, expression)
+    greek_vars = ['α', 'β', 'γ', 'δ', 'ε', 'ζ', 'η', 'θ', 'ι', 'κ', 'λ', 'μ', 
+                  'ν', 'ξ', 'ο', 'π', 'ρ', 'σ', 'τ', 'υ', 'φ', 'χ', 'ψ', 'ω']
+    
+    # Find all Greek variables (assumes variables are single Greek letters in α-ω range)
+    vars_found = re.findall(r"[α-ω]", expr)
+    
+    # Preserve order of first appearance
+    seen = []
+    for var in vars_found:
+        if var not in seen:
+            seen.append(var)
+    
+    # Map each unique variable to the next Greek letter
+    rename_map = {var: greek_vars[i] for i, var in enumerate(seen)}
+    
+    # Replace variables in expression
+    renamed_expr = ''.join(rename_map.get(ch, ch) for ch in expr)
+    
+    return renamed_expr

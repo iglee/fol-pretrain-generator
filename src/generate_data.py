@@ -3,6 +3,7 @@ import re
 import random
 import tiktoken
 import json
+from src.fol_util import read_jsonl_to_list
 
 def read_file_lines(filepath):
     """
@@ -61,6 +62,24 @@ def generate_data(rule_datum, data_type="train", temp_dir=None, i_start=0):
         k = 1000 if data_type == "basic" else 6
 
         for _ in range(k):
+            try:
+                predicates = random.sample(predicates_total, 1)[0]["predicates"].copy()
+                datum = "<|endoftext|> " + replace_greek_with_functions(rule_datum['rule'], predicates)
+                tokens, length = tokenize_with_cl100k_base(datum)
+                data = {
+                    "id": f"traindata_{i}",
+                    "rule_id": rule_datum["id"],
+                    "datum": datum,
+                    "tokens": tokens,
+                    "length": length
+                }
+                generated.append(data)
+                i += 1
+            except:
+                print("failed rule: ", rule_datum['rule'], "predicates: ", predicates)
+            
+    else:
+        try: 
             predicates = random.sample(predicates_total, 1)[0]["predicates"].copy()
             datum = "<|endoftext|> " + replace_greek_with_functions(rule_datum['rule'], predicates)
             tokens, length = tokenize_with_cl100k_base(datum)
@@ -73,20 +92,8 @@ def generate_data(rule_datum, data_type="train", temp_dir=None, i_start=0):
             }
             generated.append(data)
             i += 1
-            
-    else:
-        predicates = random.sample(predicates_total, 1)[0]["predicates"].copy()
-        datum = "<|endoftext|> " + replace_greek_with_functions(rule_datum['rule'], predicates)
-        tokens, length = tokenize_with_cl100k_base(datum)
-        data = {
-            "id": f"traindata_{i}",
-            "rule_id": rule_datum["id"],
-            "datum": datum,
-            "tokens": tokens,
-            "length": length
-        }
-        generated.append(data)
-        i += 1
+        except:
+            print("failed rule: ", rule_datum['rule'], "predicates: ", predicates)
 
     return generated
 

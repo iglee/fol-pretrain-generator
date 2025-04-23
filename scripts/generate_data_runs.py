@@ -38,8 +38,6 @@ def process_and_save(data, output_dir, chunk_size=3000, data_type="train"):
         buffer.extend(generated)
 
         while len(buffer) >= chunk_size:
-            #chunk = buffer[:chunk_size]
-            #buffer = buffer[chunk_size:]
             chunk = buffer[:]
             buffer = []
             file_path = os.path.join(output_dir, f"split_{file_counter + 1}.jsonl")
@@ -67,21 +65,22 @@ for k, v in rules_data.items():
     print(f"Processing: {data_type}")
     
     if data_type == "train":
-        output_dir = os.path.join("/mnt/isabelle-pretrain-data/fol-pretrain/raw", data_type)
+        output_dir = os.path.join("/mnt/isabelle-pretrain-data/fol-3/raw", data_type)
         temp_dir = os.path.join("/mnt/isabelle-pretrain-data/fol-3/tmp", data_type)
         id_counter['train'] = process_and_save(
             data=v,
             output_dir=output_dir,
             chunk_size=10000,
-            data_type=data_type,  # RERUN BASIC
+            data_type=data_type,  
         )
-    elif data_type in ["dev", "test"]:
-        output_dir = os.path.join("/mnt/isabelle-pretrain-data/fol-pretrain/raw", data_type)
+    elif data_type == "basic":
+        pass
+    else:
+        output_dir = os.path.join("/mnt/isabelle-pretrain-data/fol-3/raw", data_type)
         temp_dir = os.path.join("/mnt/isabelle-pretrain-data/fol-3/tmp", data_type)
         process_and_save(
             data=v,
             output_dir=output_dir,
             chunk_size=10000,
             data_type="test",
-            temp_dir=temp_dir
         )

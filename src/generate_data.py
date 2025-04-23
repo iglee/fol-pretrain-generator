@@ -62,21 +62,25 @@ def generate_data(rule_datum, data_type="train", temp_dir=None, i_start=0):
         k = 1000 if data_type == "basic" else 6
 
         for _ in range(k):
-            try:
-                predicates = random.sample(predicates_total, 1)[0]["predicates"].copy()
-                datum = "<|endoftext|> " + replace_greek_with_functions(rule_datum['rule'], predicates)
-                tokens, length = tokenize_with_cl100k_base(datum)
-                data = {
-                    "id": f"traindata_{i}",
-                    "rule_id": rule_datum["id"],
-                    "datum": datum,
-                    "tokens": tokens,
-                    "length": length
-                }
-                generated.append(data)
-                i += 1
-            except:
-                print("failed rule: ", rule_datum['rule'], "predicates: ", predicates)
+            for attempt in range(3):
+                try:
+                    predicates = random.sample(predicates_total, 1)[0]["predicates"].copy()
+                    datum = "<|endoftext|> " + replace_greek_with_functions(rule_datum['rule'], predicates)
+                    tokens, length = tokenize_with_cl100k_base(datum)
+                    data = {
+                        "id": f"traindata_{i}",
+                        "rule_id": rule_datum["id"],
+                        "datum": datum,
+                        "tokens": tokens,
+                        "length": length
+                    }
+                    generated.append(data)
+                    i += 1
+                    break  # Success, break out of retry loop
+                except Exception as e:
+                    print(f"Attempt {attempt + 1} failed for rule: {rule_datum['rule']} with predicates: {predicates}")
+                    if attempt == 2:
+                        print("Final failure after 3 attempts:", e)
             
     else:
         try: 

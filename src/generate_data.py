@@ -48,34 +48,9 @@ def replace_greek_with_functions(expr, function_names):
     return expr
 
 
-def separate_predicates(input_string):
-    return re.findall(r'\b\w+\s*\([^)]*\)', input_string)
 
-directory = '/home/isabelle/fol-pretrain-generator/rules/predicates'  # Replace with the actual directory path
-
-# List all files and directories in the given directory
-
-triplets = {}
-singles = {}
-fundamentals = ["Is(x)", "Feels(x)", "Exists(x)", "Does(x)", "Stands(x)", "There(x)", "Are(x)", "Do(x)",\
-                "Has(x)", "Have(x)", "Comes(x)", "Come(x)", "Goes(x)", "Gone(x)", "Moves(x)", "Becomes(x)", \
-                "Happens(x)", "Changes(x)", "Lives(x)", "Alive(x)","Hard(x)", "Soft(x)",\
-                "Remains(x)", "Remembers(x)", "Looks(x)", "Sounds(x)", "Belongs(x)", "Matters(x)", "Begins(x)", "Works(x)"]
-
-
-
-for filename in os.listdir(directory):
-    pth = os.path.join(directory, filename)
-    k = filename.split("_")[0]
-    v = read_file_lines(pth)
-    if "triplet" in filename:
-        triplets[k] = [separate_predicates(x) for x in v if x and (("True" not in x) or ("False" not in x))]
-        triplets[k] = [x for x in triplets[k] if len(x) == 3]
-
-    else:
-        singles[k] = [x for x in v if x and (("True" not in x) or ("False" not in x))]
-
-
+predicates_pth = "/home/isabelle/fol-pretrain-generator/data/processed_predicates.jsonl"
+predicates_total = read_jsonl_to_list(predicates_pth)
 
 
 def generate_data(rule_datum, data_type="train", temp_dir=None, i_start=0):
@@ -86,63 +61,32 @@ def generate_data(rule_datum, data_type="train", temp_dir=None, i_start=0):
         k = 1000 if data_type == "basic" else 6
 
         for _ in range(k):
-            for datalist in triplets.values():
-                try:
-                    predicates = random.sample(datalist, 1)[0].copy()
-                    predicates += [random.choice(fundamentals)]
-                    datum = "<|endoftext|> " + replace_greek_with_functions(rule_datum['rule'], predicates)
-                    tokens, length = tokenize_with_cl100k_base(datum)
-                    data = {
-                        "id": f"traindata_{i}",
-                        "rule_id": rule_datum["id"],
-                        "datum": datum,
-                        "tokens": tokens,
-                        "length": length
-                    }
-                    generated.append(data)
-                    i += 1
-                except Exception as e:
-                    print(f"[Triplet Error] {e}")
-
-            for datalist in singles.values():
-                try:
-                    predicates = random.sample(datalist, 4)
-                    datum = "<|endoftext|> " + replace_greek_with_functions(rule_datum['rule'], predicates)
-                    tokens, length = tokenize_with_cl100k_base(datum)
-                    data = {
-                        "id": f"traindata_{i}",
-                        "rule_id": rule_datum["id"],
-                        "datum": datum,
-                        "tokens": tokens,
-                        "length": length
-                    }
-                    generated.append(data)
-                    i += 1
-                except Exception as e:
-                    print(f"[Single Error] {e}")
-
-    elif data_type == "test" or data_type == "dev":
-        try:
-            if random.random() < 0.3:
-                datalist = random.choice(list(triplets.values()))
-                predicates = random.sample(datalist, 1)[0].copy()
-                predicates += [random.choice(fundamentals)]
-            else:
-                datalist = random.choice(list(singles.values()))
-                predicates = random.sample(datalist, 4)
-
+            predicates = random.sample(predicates_total, 1)[0]["predicates"].copy()
             datum = "<|endoftext|> " + replace_greek_with_functions(rule_datum['rule'], predicates)
             tokens, length = tokenize_with_cl100k_base(datum)
             data = {
-                "id": f"test_{i}",
+                "id": f"traindata_{i}",
                 "rule_id": rule_datum["id"],
                 "datum": datum,
                 "tokens": tokens,
                 "length": length
             }
             generated.append(data)
-        except Exception as e:
-            print(f"[Test Error] {e}")
+            i += 1
+            
+    else:
+        predicates = random.sample(predicates_total, 1)[0]["predicates"].copy()
+        datum = "<|endoftext|> " + replace_greek_with_functions(rule_datum['rule'], predicates)
+        tokens, length = tokenize_with_cl100k_base(datum)
+        data = {
+            "id": f"traindata_{i}",
+            "rule_id": rule_datum["id"],
+            "datum": datum,
+            "tokens": tokens,
+            "length": length
+        }
+        generated.append(data)
+        i += 1
 
     return generated
 
@@ -154,8 +98,6 @@ tf_test_rules = "/home/isabelle/fol-pretrain-generator/rules/tf_test_rules.json"
 tf_train_rules = "/home/isabelle/fol-pretrain-generator/rules/tf_train_rules.json"
 
 rules_data = {}
-
-
 
 for rules in [basic_rules, test_rules, dev_rules, tf_test_rules, tf_train_rules, train_rules]:
     filename_without_ext = os.path.splitext(os.path.basename(rules))[0]

@@ -66,8 +66,8 @@ for k, v in rules_data.items():
     data_type = "_".join(k.split("_")[:-1])
     print(f"Processing: {data_type}")
     
-    if data_type == "basic":
-        output_dir = os.path.join("/mnt/isabelle-pretrain-data/fol-3/raw", data_type)
+    if data_type == "train":
+        output_dir = os.path.join("/mnt/isabelle-pretrain-data/fol-pretrain/raw", data_type)
         temp_dir = os.path.join("/mnt/isabelle-pretrain-data/fol-3/tmp", data_type)
         id_counter['train'] = process_and_save(
             data=v,
@@ -75,14 +75,13 @@ for k, v in rules_data.items():
             chunk_size=10000,
             data_type=data_type,  # RERUN BASIC
         )
-    else:
-        pass
-        #output_dir = os.path.join("/mnt/isabelle-pretrain-data/fol-3/raw", data_type)
-        #temp_dir = os.path.join("/mnt/isabelle-pretrain-data/fol-3/tmp", data_type)
-        #process_and_save(
-        #    data=v,
-        #    output_dir=output_dir,
-        #    chunk_size=10000,
-        #    data_type="test",
-        #    temp_dir=temp_dir
-        #)
+    elif data_type in ["dev", "test"]:
+        output_dir = os.path.join("/mnt/isabelle-pretrain-data/fol-pretrain/raw", data_type)
+        temp_dir = os.path.join("/mnt/isabelle-pretrain-data/fol-3/tmp", data_type)
+        process_and_save(
+            data=v,
+            output_dir=output_dir,
+            chunk_size=10000,
+            data_type="test",
+            temp_dir=temp_dir
+        )

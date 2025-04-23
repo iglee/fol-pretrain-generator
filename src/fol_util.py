@@ -9,6 +9,14 @@ def read_pkl_fie(file_path):
         data = pickle.load(file)
     return data
 
+def read_file_into_list(file_path):
+    """Reads the entire file and returns its contents as a list of lines."""
+    with open(file_path, "r") as f:
+        lines = f.readlines()
+
+    # Strip newline characters from each line
+    return [line.strip() for line in lines]
+
 def read_json_file(file_path):
     """Reads a JSON file and returns its content as a Python dictionary."""
     try:

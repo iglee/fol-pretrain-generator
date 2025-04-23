@@ -7,58 +7,78 @@ import json
 api_key = os.getenv("OPENAI_API_KEY")
 client = OpenAI(api_key=api_key)
 
-def read_file_into_list(file_path):
-    """Reads the entire file and returns its contents as a list of lines."""
-    with open(file_path, "r") as f:
-        lines = f.readlines()
-
-    # Strip newline characters from each line
-    return [line.strip() for line in lines]
-
-def load_config(file_path):
-    """Loads the prompting configuration from a YAML file."""
-    with open(file_path, "r") as f:
-        return yaml.safe_load(f)
-
-def process_prompt(prompt, system_instruction="You're a helpful assistant designed for creating synthetic data"):
+def process_prompt(prompt, system_instruction="You're a helpful assistant designed for creating synthetic data."):
     return [
         {"role": "system", "content": system_instruction},
         {"role": "user", "content": prompt}
     ]
 
 
-def prompt_chatgpt_from_config(config):
-    """Reads a YAML configuration file and sends a prompt to ChatGPT."""
+def batch_prompt_items(prompt):
+    return {"method": "POST", "url": "/v1/chat/completions", "body": {"model": "gpt-4o", "messages": prompt}}
 
-    # Send the request to OpenAI
-    response = client.chat.completions.create(model=config.get("model", "gpt-4"),
-    messages=config.get("prompt", ""),
-    max_tokens=config.get("max_tokens", 1000),
-    temperature=config.get("temperature", 1.0))
+def save_batch_list_to_jsonl(batches, chunk_size=1000, base_filename="batch", base_dir="."):
+    os.makedirs(base_dir, exist_ok=True)  # Ensure the directory exists
 
-    return response.choices[0].message.content
+    for i in range(0, len(batches), chunk_size):
+        chunk = batches[i:i+chunk_size]
+        filename = os.path.join(base_dir, f"{base_filename}_{i//chunk_size + 1}.jsonl")
+        with open(filename, "w", encoding="utf-8") as f:
+            for obj in chunk:
+                f.write(json.dumps(obj) + "\n")
+        print(f"Saved {len(chunk)} items to {filename}")
 
-def extract_and_append_json(data_string, file_path):
-    """
-    Extracts JSON data from a string and appends it to a file.
-    
-    Args:
-        data_string (str): A string containing JSON data.
-        file_path (str): Path to the file where the JSON data will be appended.
-    """
-    try:
-        # Parse the string to extract JSON data
-        data = json.loads(data_string)
+def start_batch_jobs_from_dir(batch_dir, project_name="fol_pretrain", run_date="2025-04-22"):
+    # Iterate through each file in the batch directory
+    for filename in os.listdir(batch_dir):
+        if filename.endswith(".jsonl"):
+            file_path = os.path.join(batch_dir, filename)
+
+            with open(file_path, "rb") as f:
+                batch_input_file = client.files.create(
+                    file=f,
+                    purpose="batch"
+                )
+                
+                metadata = {
+                    "project": project_name,
+                    "run_date": run_date,
+                    "source_file": filename,
+                }
+
+                batch_input_file_id = batch_input_file.id
+                client.batches.create(
+                    input_file_id=batch_input_file_id,
+                    endpoint="/v1/chat/completions",
+                    completion_window="24h",
+                    metadata=metadata
+                )
         
-        # Open the file in append mode
-        with open(file_path, 'a') as file:
-            # Append the data to the file as a JSON string
-            json.dump(data, file)
-            file.write("\n")  # Ensure each entry is on a new line
-            
-    
-    except json.JSONDecodeError:
-        print("Error: Invalid JSON data in the string")
-    except Exception as e:
-        print(f"An error occurred: {e}")
+def retrieve_batches_by_metadata(project_name=None, run_date=None):
+    # List all batches from OpenAI API
+    batches = openai.Batch.list()
 
+    # Filter batches by metadata
+    filtered_batches = []
+    for batch in batches['data']:
+        batch_metadata = batch.get("metadata", {})
+
+        # Check if batch metadata matches the provided filters
+        if (project_name and batch_metadata.get("project") == project_name) or \
+           (run_date and batch_metadata.get("run_date") == run_date):
+            filtered_batches.append(batch)
+
+    # If no matching batches, print a message
+    if not filtered_batches:
+        print("No batches found matching the provided metadata.")
+    else:
+        # Return or process matching batches
+        for batch in filtered_batches:
+            print(f"Batch ID: {batch['id']}")
+            print(f"Project: {batch['metadata'].get('project')}")
+            print(f"Run Date: {batch['metadata'].get('run_date')}")
+            print(f"Status: {batch['status']}")
+            print(f"Link: https://platform.openai.com/batch/{batch['id']}")
+            print("-" * 50)
+
+    return filtered_batches

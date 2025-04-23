@@ -162,9 +162,7 @@ cython_debug/
 #.idea/
 
 # project specific
-data/
 dyckkm-learning/
-rules/
 fol-rules
 config/
 *.pkl

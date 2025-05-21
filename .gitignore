@@ -167,4 +167,4 @@ fol-rules
 config/
 *.pkl
 rules
-data/processed_predicates.jsonl
+data/*

@@ -5,7 +5,10 @@ from src.fol_util import read_file_into_list
 from src.gpt_util import process_prompt, batch_prompt_items, save_batch_list_to_jsonl, start_batch_jobs_from_dir
 
 directory = '/home/isabelle/fol-pretrain-generator/rules/predicates' 
-prompt = "Generate 5 sets of predicates about {}. e.g. {}, {}, {}. Make sure to generate 4 predicates per set.\nSimply list the data and nothing else. Please format it as a jsonl, with {{\"predicates\": [PREDICATES], \"topic\": [TOPIC]}}"
+# regular
+prompt = "Generate 10 sets of predicates about {}. e.g. {}, {}, {}. Make sure to generate 4 predicates per set.\nSimply list the data and nothing else. Please format it as a jsonl, with {{\"predicates\": [PREDICATES], \"topic\": [TOPIC]}}"
+# semantically complex:
+#prompt = "Generate 10 sets of predicates about {}. e.g. {}, {}, {}. Make sure to generate 4 predicates per set.\nSimply list the data and nothing else. Generate semantically complex predicates, with complex/composite words. Please format it as a jsonl, with {{\"predicates\": [PREDICATES], \"topic\": [TOPIC]}}"
 model = "gpt-4o"
 
 
@@ -51,7 +54,7 @@ for k,v in triplets.items():
 for k,v in singles.items():
     topic = k
     for _ in range(n_repeat_singlet):
-        predicates = random.sample(v, 3)[:]
+        predicates = random.sample(v + fundamentals, 3)[:]
         message = process_prompt(prompt.format(topic, *predicates))
         batch_item = batch_prompt_items(message)
         batch_item['custom_id'] = f"predicates_{i}"
@@ -60,4 +63,4 @@ for k,v in singles.items():
         
         
 save_batch_list_to_jsonl(batches, chunk_size=1000, base_filename="batch", base_dir="data/batches/")
-start_batch_jobs_from_dir("data/batches/", project_name="fol_pretrain_predicates", run_date="2025-04-22")
+start_batch_jobs_from_dir("data/batches/", project_name="fol_pretrain_predicates", run_date="2025-04-27")

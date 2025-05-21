@@ -40,7 +40,7 @@ def process_and_save(data, output_dir, chunk_size=3000, data_type="train"):
         while len(buffer) >= chunk_size:
             chunk = buffer[:]
             buffer = []
-            file_path = os.path.join(output_dir, f"split_{file_counter + 1}.jsonl")
+            file_path = os.path.join(output_dir, f"segment_{file_counter}.jsonl")
             with open(file_path, "w", encoding="utf-8") as f:
                 for item in chunk:
                     json.dump(item, f, ensure_ascii=False)
@@ -49,36 +49,68 @@ def process_and_save(data, output_dir, chunk_size=3000, data_type="train"):
 
     # Save any remaining items in the buffer
     if buffer:
-        file_path = os.path.join(output_dir, f"split_{file_counter + 1}.jsonl")
+        file_path = os.path.join(output_dir, f"segment_{file_counter}.jsonl")
         with open(file_path, "w", encoding="utf-8") as f:
             for item in buffer:
                 json.dump(item, f, ensure_ascii=False)
                 f.write("\n")
 
-    print(f"\nDone! Saved all generated data in {file_counter + 1} file(s).")
+    print(f"\nDone! Saved all generated data in {file_counter} file(s).")
     return current_id
 
-
-# Runner block
-for k, v in rules_data.items():
-    data_type = "_".join(k.split("_")[:-1])
-    print(f"Processing: {data_type}")
-    
-    if data_type == "train":
-        output_dir = os.path.join("/mnt/isabelle-pretrain-data/dataset_v3/fol-pretrain/raw", data_type)
-        id_counter['train'] = process_and_save(
-            data=v,
-            output_dir=output_dir,
-            chunk_size=10000,
-            data_type=data_type,  
-        )
-    elif data_type == "basic":
-        pass
-    else:
-        output_dir = os.path.join("/mnt/isabelle-pretrain-data/dataset_v3/fol-pretrain/raw", data_type)
-        process_and_save(
-            data=v,
-            output_dir=output_dir,
-            chunk_size=10000,
-            data_type="test",
-        )
+if __name__ == "__main__":
+    # Runner block
+    for k, v in rules_data.items():
+        data_type = "_".join(k.split("_")[:-1])
+        print(f"Processing: {data_type}")
+        
+        if data_type == "train":
+            pass
+            #output_dir = os.path.join("/mnt/isabelle-pretrain-data/dataset_v3/fol-pretrain/", data_type + "_2")
+            #id_counter['train'] = process_and_save(
+            #    data=v,
+            #    output_dir=output_dir,
+            #    chunk_size=100000,
+            #    data_type=data_type,  
+            #)
+        elif data_type == "basic":
+            pass
+            #output_dir = os.path.join("/mnt/isabelle-pretrain-data/dataset_v3/fol-pretrain/", data_type)
+            #id_counter['train'] = process_and_save(
+            #    data=v,
+            #    output_dir=output_dir,
+            #    chunk_size=100000,
+            #    data_type=data_type,  
+            #)
+        elif data_type == "test":
+            output_dir = os.path.join("/mnt/isabelle-pretrain-data/dataset_v3/fol-pretrain/", data_type)
+            id_counter['test'] = process_and_save(
+                data=v,
+                output_dir=output_dir,
+                chunk_size=100000,
+                data_type=data_type,  
+            )
+        elif data_type == "tf_test":
+            output_dir = os.path.join("/mnt/isabelle-pretrain-data/dataset_v3/fol-pretrain/", data_type)
+            id_counter['test'] = process_and_save(
+                data=v,
+                output_dir=output_dir,
+                chunk_size=100000,
+                data_type=data_type,  
+            )
+        elif data_type == "tf_train":
+            output_dir = os.path.join("/mnt/isabelle-pretrain-data/dataset_v3/fol-pretrain/", data_type)
+            id_counter['test'] = process_and_save(
+                data=v,
+                output_dir=output_dir,
+                chunk_size=100000,
+                data_type=data_type,  
+            )
+        elif data_type == "dev":
+            output_dir = os.path.join("/mnt/isabelle-pretrain-data/dataset_v3/fol-pretrain/", data_type)
+            id_counter['test'] = process_and_save(
+                data=v,
+                output_dir=output_dir,
+                chunk_size=100000,
+                data_type=data_type,  
+            )

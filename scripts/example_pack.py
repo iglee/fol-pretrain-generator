@@ -150,8 +150,8 @@ next_id = pack_examples_from_input(
     start_pack_idx=0
 )
 """
-input_path = "/mnt/isabelle-pretrain-data/dataset_v3/fol-pretrain/raw/train/"
-output_path = "/mnt/isabelle-pretrain-data/dataset_v3/fol-pretrain/packed/train/"
+input_path = "/mnt/isabelle-pretrain-data/dataset_v3/fol-pretrain/raw/train_repeated_30000/"
+output_path = "/mnt/isabelle-pretrain-data/dataset_v3/fol-pretrain/packed/train_repeated_30000/"
 
 next_id = pack_examples_from_input(
     input_source=input_path,        # single .jsonl file as input
@@ -159,6 +159,7 @@ next_id = pack_examples_from_input(
     max_seq_length=1024,
     eos_token_id=100257,
     chunk_size=3000,
-    start_pack_idx=68293+1
+    start_pack_idx=3532906+1,
+    shuffle=True
 )
 

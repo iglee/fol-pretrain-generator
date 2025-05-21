@@ -5,7 +5,7 @@ import json
 import re
 
 predicates_dir = "data/predicate_prompted"
-N_files = 177*2
+
 
 def extract_jsonl_from_content(content):
     # Step 1: Extract the code block (if it's there)
@@ -19,7 +19,7 @@ def extract_jsonl_from_content(content):
     # Step 2: Split into lines and parse each as JSON
     return [json.loads(line) for line in jsonl_str.strip().split('\n') if line.strip()]
 
-
+N_files = 708
 predicates_processed = []
 
 for i in range(N_files):
@@ -34,5 +34,21 @@ for i in range(N_files):
                     predicates_processed.append(x)
         except:
             pass
+
+predicates_dir = "data/predicate_prompted_complex"
+for i in range(1162, 2361):
+    file = os.path.join(predicates_dir, f"predicates_{i}.jsonl")
+    data = read_jsonl_to_list(file)
+    for x in data:
+        try:
+            response = get_response_from_batch_items(x)
+            predicates = extract_jsonl_from_content(response)
+            for x in predicates:
+                if len(x['predicates']) == 4:
+                    predicates_processed.append(x)
+        except:
+            pass
         
-write_list_to_jsonl(predicates_processed, "data/processed_predicates.jsonl")
+print(type(predicates_processed))
+print(len(predicates_processed))
+write_list_to_jsonl(predicates_processed, "data/processed_predicates_total.jsonl")

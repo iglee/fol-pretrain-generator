@@ -32,25 +32,25 @@ print(f"total number of unique rules: {len(unique)}")
 
 # test train split
 print(f"\n\ntest train dev split...")
-test, train = test_train_split_list(unique_data, 0.03)
+test, train = test_train_split_list(unique_data, 0.004)
 sampled = random.sample(train, k=int(len(train) * 0.02))
 dev = [copy.deepcopy(x) for x in sampled[:5000]]
 print(f"split complete: test ({len(test)}), train ({len(train)}), dev ({len(dev)})")
 
 # save data to files
 print(f"save data to files...")
-write_list_to_json(train, "rules/train_rules.json")
-write_list_to_json(test, "rules/test_rules.json")
-write_list_to_json(dev, "rules/dev_rules.json")
+write_list_to_json(train, "fol-rules/train_rules.json")
+write_list_to_json(test, "fol-rules/test_rules.json")
+write_list_to_json(dev, "fol-rules/dev_rules.json")
 
 # get true or false dataset
 for data in [test, sampled]:
     if data == test:
         print("generate true/false datasets from the withheld testset.. only considering 1 step T/F")
-        outfile = "rules/tf_test_rules.json"
+        outfile = "fol-rules/tf_test_rules.json"
     else:
         print("generate true/false datasets from the dev set.. only considering 1 step T/F")
-        outfile = "rules/tf_train_rules.json"
+        outfile = "fol-rules/tf_train_rules.json"
     tf_test = []
 
     for x in data:

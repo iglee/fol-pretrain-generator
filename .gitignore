@@ -168,3 +168,9 @@ config/
 *.pkl
 rules
 data/processed_predicates.jsonl
+data/processed_predicates/*
+data/batches/*
+data/predicate_prompted
+data/predicate_prompted_complex
+data/processed_predicates_semantically_diverse.jsonl
+data/processed_predicates_total.jsonl
